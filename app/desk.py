@@ -1,6 +1,7 @@
 from flask import Blueprint, current_app, render_template, request
 
 from app.problem import DeskError
+from app.register.committed import pool_ledger
 from app.settings import EDITION
 from app.source import bundle
 from app.vault.record import index
@@ -19,5 +20,12 @@ def folio(view='balance'):
     sample = request.args.get('sample','dirty')
     data = steps(bundle(sample),view)
     volumes = index(current_app.vault) if view in ('volumes','stamp') else []
+    pools = signed = None
+    if view in ('stamp', 'volumes'):
+        with current_app.vault.session() as conn:
+            if view == 'stamp':
+                pools = pool_ledger(conn)
+            signed = {row[0] for row in conn.execute('SELECT id FROM slips')}
     return render_template('base.html', view=view, sections=SECTIONS, data=data, sample=sample,
-                           volumes=volumes, active=request.args.get('run'), edition=EDITION)
+                           volumes=volumes, active=request.args.get('run'), edition=EDITION,
+                           pools=pools, signed=signed or set())

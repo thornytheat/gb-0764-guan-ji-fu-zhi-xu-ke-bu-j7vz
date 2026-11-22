@@ -7,10 +7,11 @@ MESSAGES = {
     'NO_LICENSE':'当天无有效授权', 'OUTSIDE_ARTICLE':'申请超出文章页界', 'QUOTA':'额度不足',
     'UNKNOWN_TARGET':'撤销目标未裁决', 'REPEATED_CANCEL':'复本订单已撤销', 'WRONG_ORG':'撤销机构与原件不符',
     'RUN_UNKNOWN':'未找到许可批次', 'DRAFT_ONLY':'请先签发批次凭证', 'BOUNDARY':'跨年度复本不能撤销',
+    'POOL_OVERCOMMIT':'年度池余额不足，试算页数不能落印承诺',
 }
 
 
 class DeskError(ValueError):
-    def __init__(self, code, status=422):
+    def __init__(self, code, status=422, details=None):
         super().__init__(MESSAGES[code])
-        self.code, self.status = code, status
+        self.code, self.status, self.details = code, status, details

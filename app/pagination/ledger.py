@@ -6,6 +6,9 @@ def cancellation(row, active, released, balances):
     target = active.get(row['target'])
     code = row['ruling']
     if not code and target is None:
+        # Within this snapshot the target has no ruling, so the trial cannot
+        # credit anything. At imprint time such reversals are re-adjudicated
+        # against copies already signed in other volumes.
         code = 'REPEATED_CANCEL' if row['target'] in released else 'UNKNOWN_TARGET'
     if not code and row['org']['code'] != target['org']:
         code = 'WRONG_ORG'

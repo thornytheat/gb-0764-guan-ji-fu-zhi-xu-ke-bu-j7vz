@@ -16,7 +16,10 @@ def create_app(path=LEDGER):
 
     @app.errorhandler(DeskError)
     def problem(exc):
-        return {'error':exc.code,'message':str(exc)},exc.status
+        payload = {'error':exc.code,'message':str(exc)}
+        if exc.details:
+            payload['details'] = exc.details
+        return payload,exc.status
 
     @app.get('/healthz')
     def health():

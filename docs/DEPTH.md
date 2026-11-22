@@ -12,7 +12,7 @@
 | M4 拆页与额度占用 | 看并集、越界和退回额度 | `GET/POST /api/pages` | `app/pagination/ledger.py` `app/pagination/spans.py` | `tests/test_pages.py` |
 | M5 签发请求对账 | 复算许可页与有效额度 | `GET/POST /api/balance` | `app/register/balance.py` | `tests/test_balance.py` |
 | M6 批次留档复跑 | 取回原归档快照 | `POST /api/volumes` | `app/vault/record.py` `app/vault/database.py` | `tests/test_vault.py` |
-| M7 许可证据签发 | 签发可复验凭证 | `POST /api/volumes/{id}/stamp` | `app/certificate/slip.py` | `tests/test_certificate.py` |
+| M7 许可证据签发 | 签发可复验凭证，区分试算与已承诺页 | `POST /api/volumes/{id}/stamp` `GET /api/ledger` | `app/certificate/slip.py` `app/register/committed.py` | `tests/test_certificate.py` `tests/test_commitments.py` |
 
 ## 陷阱登记
 
@@ -27,5 +27,8 @@
 | TRAP-19 | 专属和公开同日适用 | 高修订公开版覆盖专属 | 先比较授权范围 | `app/licenses/terms.py` | `tests/test_licenses.py::test_special_beats_public_high_revision` |
 | TRAP-23 | 请求在截止日 | 到期条款多算一天 | 左闭右开 | `app/licenses/terms.py` | `tests/test_licenses.py::test_closed_at_valid_until` |
 | TRAP-25 | 两版时间重叠 | 按列表顺序选版 | 高修订优先，同级冲突待证 | `app/licenses/decide.py` | `tests/test_licenses.py::test_overlapping_versions_and_tie` |
+| TRAP-31 | 试算页被当成已占额度 | 搁置草卷占满池、急件无法落印 | 试算不记账，落印才在年度池承诺 | `app/register/committed.py` | `tests/test_commitments.py::test_deposit_is_trial_only_and_books_no_pool` |
+| TRAP-32 | 两卷并发落印超池 | 先查后插产生竞态、超额承诺 | `BEGIN IMMEDIATE` 串行结算，不足整笔回滚 | `app/vault/database.py` `app/certificate/slip.py` | `tests/test_commitments.py::test_concurrent_stamps_never_oversubscribe_one_year_pool` |
+| TRAP-33 | 跨卷撤销按试算页归还 | 归还未实签的页数、可重复贷记 | 落印裁决，只还原凭证实签页且目标唯一 | `app/register/committed.py` | `tests/test_commitments.py::test_cross_volume_cancel_returns_original_signed_pages` |
 
 58 申请页 = 32 许可页 + 18 拒绝页 + 8 待证页。C01 已许可 6 页，R01 归还 6 页，因此有效占用 26 页。申请页计在订单内部去重，各不同订单独立计数。

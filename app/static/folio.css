@@ -32,6 +32,12 @@ th,td {text-align:right;padding:var(--row) 8px;border-bottom:1px solid var(--lin
 th:first-child,td:first-child {text-align:left}
 th {position:sticky;top:0;background:var(--page);color:var(--muted)}
 small,output {overflow-wrap:anywhere}
+.trial-vs-committed h4 {font:700 16px var(--font-doc);margin:4px 0 8px;color:var(--accent)}
+.committed-yes {color:var(--stamp);font-weight:700}
+.committed-none {color:var(--muted)}
+tr.is-signed td {background:var(--wash)}
+tr.pool-tight td {color:var(--stamp)}
+.hint {font-size:12.5px;color:var(--muted);margin-top:9px;line-height:1.55}
 details {padding:7px 0;border-bottom:1px solid var(--line)}
 summary {cursor:pointer}
 footer {display:flex;justify-content:space-between;gap:12px;padding:13px clamp(16px,5vw,72px);border-top:1px solid var(--line);color:var(--muted);font-size:13px}

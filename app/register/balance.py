@@ -21,4 +21,5 @@ def reconcile(intake, ledger):
     return dict(total, restored=restored, effective=total['licensed']-restored,
                 balanced=source_ok and orders_ok and quota_ok, source_ok=source_ok, quota_ok=quota_ok,
                 accounts=accounts, reasons=dict(reasons), explanations=footprints,
+                pending_reversals=[row for row in ledger['reversals'] if row['reason']=='UNKNOWN_TARGET'],
                 cancellation_errors=[row for row in ledger['reversals'] if row['reason']])

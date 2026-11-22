@@ -1,6 +1,7 @@
 from flask import Blueprint, current_app, jsonify
 
 from app.certificate.slip import certificate, stamp
+from app.register.committed import pool_ledger, run_commitments, run_releases
 from app.source import read_request
 from app.vault.record import deposit, index, volume
 from app.workflow import steps
@@ -51,6 +52,20 @@ def file():
 @rights.get('/api/volumes/<run>')
 def get_volume(run):
     return volume(current_app.vault,run)
+
+
+@rights.get('/api/volumes/<run>/commitments')
+def commitments(run):
+    volume(current_app.vault, run)
+    with current_app.vault.session() as conn:
+        return {'run_id':run, 'commitments':run_commitments(conn, run),
+                'releases':run_releases(conn, run)}
+
+
+@rights.get('/api/ledger')
+def ledger():
+    with current_app.vault.session() as conn:
+        return {'pools':pool_ledger(conn)}
 
 
 @rights.post('/api/volumes/<run>/stamp')

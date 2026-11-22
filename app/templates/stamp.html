@@ -1,4 +1,19 @@
 <div class="folios"><article class="panel print-slip"><h3>复制许可签发凭证</h3>
-{% if volumes %}<form id="stamp"><label for="volume">许可卷号</label><select id="volume">{% for item in volumes %}<option value="{{ item.run_id }}" {{ 'selected' if item.run_id==active }}>{{ item.run_id[:14] }} · {{ item.totals.effective }} 页</option>{% endfor %}</select><button>落印签发</button></form>
-<output id="imprint-value"></output><p><a id="certificate" hidden>下载许可凭证</a></p>{% else %}<p>请先复算归卷。</p>{% endif %}</article>
-<aside class="panel"><h3>签发联</h3><div class="imprint" id="paper-stamp">待盖印</div><button class="print" type="button" id="print-slip">打印本页</button></aside></div>
+{% if volumes %}
+<section class="trial-vs-committed"><h4>试算与已承诺页数</h4>
+<div class="shelf"><table><thead><tr><th>许可卷号</th><th>试算净页</th><th>已承诺页</th><th>状态</th></tr></thead><tbody>
+{% for item in volumes %}<tr class="{{ 'is-signed' if item.run_id in signed }}">
+<td><a href="{{ url_for('desk.folio',view='stamp',run=item.run_id,sample=sample) }}">{{ item.run_id[:14] }}</a></td>
+<td>{{ item.totals.effective }}</td>
+<td>{% if item.run_id in signed %}<span class="committed-yes">{{ item.totals.effective }}</span>{% else %}<span class="committed-none">未落印</span>{% endif %}</td>
+<td>{{ '已承诺·可查验' if item.run_id in signed else '仅试算·不占池' }}</td></tr>{% endfor %}
+</tbody></table></div>
+<p class="hint">试算页随归卷快照复算，不占用年度池；落印成功后才转为已承诺页并占用同年度池。</p></section>
+<form id="stamp"><label for="volume">许可卷号</label><select id="volume">{% for item in volumes %}<option value="{{ item.run_id }}" {{ 'selected' if item.run_id==active }}>{{ item.run_id[:14] }} · 试算 {{ item.totals.effective }} 页</option>{% endfor %}</select><button>落印签发</button></form>
+<output id="imprint-value"></output><p><a id="certificate" hidden>下载许可凭证</a></p>
+{% else %}<p>请先复算归卷。</p>{% endif %}</article>
+<aside class="panel"><h3>年度池台账</h3>{% if pools %}<div class="shelf"><table><thead><tr><th>年度池</th><th>限额</th><th>已承诺</th><th>已归还</th><th>可承诺</th></tr></thead><tbody>
+{% for row in pools %}<tr class="{{ 'pool-tight' if row.available == 0 }}"><td>{{ row.pool }}</td><td>{{ row.limit }}</td><td>{{ row.committed }}</td><td>{{ row.released }}</td><td>{{ row.available }}</td></tr>{% endfor %}
+</tbody></table></div>
+<p class="hint">可承诺 = 限额 − 已承诺净额；归还页立即释放供其他卷使用。</p>{% else %}<p>尚无落印记录。</p>{% endif %}
+<h3>签发联</h3><div class="imprint" id="paper-stamp">待盖印</div><button class="print" type="button" id="print-slip">打印本页</button></aside></div>

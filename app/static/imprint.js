@@ -39,12 +39,21 @@ select?.addEventListener('change', () => {
 });
 bind(document.querySelector('#stamp'), async () => {
   const selected = select.value;
-  const record = await send(`/api/volumes/${selected}/stamp`, {});
-  if (select.value !== selected) return;
-  output.value = record.imprint;
-  file.href = `/api/volumes/${selected}/export`;
-  file.hidden = false;
-  mark.textContent = '已签发';
-  note.textContent = record.reused ? '已取回原凭证' : '复制许可凭证已落印';
+  try {
+    const record = await send(`/api/volumes/${selected}/stamp`, {});
+    if (select.value !== selected) return;
+    output.value = record.imprint;
+    file.href = `/api/volumes/${selected}/export`;
+    file.hidden = false;
+    mark.textContent = '已签发';
+    const committed = (record.commitments || []).reduce((sum, item) => sum + (item.net || 0), 0);
+    const released = (record.releases || []).reduce((sum, item) => sum + (item.pages || 0), 0);
+    note.textContent = (record.reused ? '已取回原凭证（未重复记账）' : '复制许可凭证已落印')
+      + ` · 已承诺 ${committed} 页` + (released ? ` · 跨卷归还 ${released} 页` : '');
+    setTimeout(() => location.reload(), 900);
+  } catch (error) {
+    note.textContent = error.message + '；请改报可承诺页数或等待额度归还，落印未记账。';
+    mark.textContent = '池额不足';
+  }
 });
 document.querySelector('#print-slip')?.addEventListener('click', () => window.print());
